@@ -3,27 +3,28 @@ import requests
 from bs4 import BeautifulSoup
 from zipfile import ZipFile
 
-# 1.1 Acesso ao site
+# Acesso ao site
 url = "https://www.gov.br/ans/pt-br/acesso-a-informacao/participacao-da-sociedade/atualizacao-do-rol-de-procedimentos"
 response = requests.get(url)
 soup = BeautifulSoup(response.content, "html.parser")
 
-# Localizar os links dos Anexos I e II
+# Localizar os links 
 anexos = {}
 for link in soup.find_all("a", href=True):
-    if "Anexo I" in link.text or "Anexo II" in link.text:
+    if ("Anexo I" in link.text or "Anexo II" in link.text) and link['href'].endswith(".pdf"):
         anexos[link.text.strip()] = link['href']
 
-# 1.2 Download dos PDFs
+# Download dos PDFs 
 os.makedirs("anexos", exist_ok=True)
 for nome, link in anexos.items():
     pdf_response = requests.get(link)
-    with open(f"anexos/{nome}.pdf", "wb") as file:
+    nome_arquivo = link.split("/")[-1]
+    with open(f"anexos/{nome_arquivo}", "wb") as file:
         file.write(pdf_response.content)
 
-# 1.3 Compactar os PDFs em um arquivo ZIP
+# Compactar os PDFs em um arquivo ZIP
 with ZipFile("anexos.zip", "w") as zipf:
-    for nome in anexos.keys():
-        zipf.write(f"anexos/{nome}.pdf", arcname=f"{nome}.pdf")
+    for nome_arquivo in os.listdir("anexos"):
+        zipf.write(f"anexos/{nome_arquivo}", arcname=nome_arquivo) 
 
-print("Anexos baixados e compactados com sucesso!")
+print("Arquivos PDF baixados e compactados!")
