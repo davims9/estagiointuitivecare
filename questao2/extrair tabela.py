@@ -1,9 +1,15 @@
-import tabula
+import os
+import tabula 
 import pandas as pd
 import re
+from zipfile import ZipFile
 
 # Caminho do arquivo PDF
-pdf_path = 'Anexo_I_Rol_2021RN_465.2021_RN627L.2024.pdf'
+current_directory = os.getcwd()
+
+pdf_path = os.path.join(current_directory, 'questao2', 'Anexo_I_Rol_2021RN_465.2021_RN627L.2024.pdf')
+
+print(f"Procurando o arquivo em: {pdf_path}")
 
 # Definir os cabeçalhos para pegar corretamente as tabelas em cada pagina
 nome_colunas = [
@@ -79,9 +85,13 @@ if tabelas_processadas:
     tabela_final = tabela_final[tabela_final['PROCEDIMENTO'].notna()]
     
     # Salvar CSV com separador ;
-    csv_path = 'procedimentos_saude.csv'
+    csv_path = 'questao2\procedimentos_saude.csv'
     tabela_final.to_csv(csv_path, index=False, encoding='utf-8-sig', sep=';')
-    print(f"Tabela extraída com sucesso e salva em: {csv_path}")
+        
+    zip_path = 'questao2\Teste_DaviMouraSouza.zip'
+    with ZipFile(zip_path, 'w') as zipf:
+        zipf.write(csv_path, arcname='procedimentos_saude.csv')  # Compacta o arquivo CSV com o nome dentro do ZIP
+    print(f"Tabela {csv_path} salva e compactada sucesso: {zip_path}")
 
 else:
     print("Nenhuma tabela válida encontrada.")
